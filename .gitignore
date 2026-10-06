@@ -1,5 +1,9 @@
 dev/shots/
 dev/acts/
+dev/live/
+dev/bare/
+dev/clone/
+dev/_*.md
 dev/clean/
 dev/stills/
 dev/qa/
