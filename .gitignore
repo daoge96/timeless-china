@@ -1,0 +1,14 @@
+dev/shots/
+dev/acts/
+dev/clean/
+dev/stills/
+dev/qa/
+dev/isotest.html
+dev/steps*.json
+dev/_chk.cjs
+dev/_*.py
+dev/_sheet.py
+dev/_sheet.png
+dev/*.pyc
+.DS_Store
+Thumbs.db
