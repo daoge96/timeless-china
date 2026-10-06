@@ -23,7 +23,7 @@ E.cfg = {
 E.reduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 E.low = E.cfg.q === "low" || E.cfg.q === "med";
 
-E.W = 0; E.H = 0; E.dpr = 1;
+E.W = 0; E.H = 0; E.dpr = 1; E.baseDpr = 0; E.q = 1;
 E.t = 0; E.paused = E.cfg.pause; E.muted = E.cfg.mute; E.userPaused = false;
 E.actIndex = -1; E.local = 0;
 E.timeScale = E.reduced ? 0.82 : 1;
@@ -65,28 +65,35 @@ let ctx = null, scene = null, sctx = null, prev = null, pctx = null;
 let hud = null, hctx = null;
 let thumbLayer = null;
 
-E.fit = function () {
+E.fits = 0; E.builds = 0;
+E.fit = function (soft) {
+  E.fits++;
   const vw = Math.max(320, window.innerWidth);
   const vh = Math.max(240, window.innerHeight);
   E.W = vw; E.H = vh;
-  const big = vw * vh > 2400000;
-  E.dpr = E.cfg.dpr > 0 ? U.clamp(E.cfg.dpr, 0.5, 3) : U.clamp(window.devicePixelRatio || 1, 1, big ? 1.5 : 2) * (E.low ? 0.8 : 1);
+  if (!soft || !E.baseDpr) {
+    const big = vw * vh > 1700000;
+    E.baseDpr = E.cfg.dpr > 0 ? U.clamp(E.cfg.dpr, 0.5, 3)
+      : U.clamp(window.devicePixelRatio || 1, 1, big ? 1.5 : 2) * (E.low ? 0.75 : 1);
+  }
+  E.dpr = U.clamp(E.baseDpr * E.q, 0.7, 2.6);
   stage.width = Math.ceil(vw * E.dpr); stage.height = Math.ceil(vh * E.dpr);
   stage.style.width = vw + "px"; stage.style.height = vh + "px";
-  ctx = stage.getContext("2d", { alpha: false });
-  scene = document.createElement("canvas");
+  if (!ctx) ctx = stage.getContext("2d", { alpha: false });
+  if (!scene) scene = document.createElement("canvas");
   scene.width = stage.width; scene.height = stage.height;
-  window.__scene = [scene.width, scene.height];
-  sctx = scene.getContext("2d", { alpha: false });
-  prev = document.createElement("canvas");
+  if (!sctx) sctx = scene.getContext("2d", { alpha: false });
+  if (!prev) prev = document.createElement("canvas");
   prev.width = Math.ceil(vw / 2); prev.height = Math.ceil(vh / 2);
-  pctx = prev.getContext("2d", { alpha: false });
+  if (!pctx) pctx = prev.getContext("2d", { alpha: false });
   if (E.cfg.nohud) { const h = document.getElementById("hud"); if (h) h.style.display = "none"; return; }
-  hud = document.createElement("canvas");
+  if (!hud) {
+    hud = document.createElement("canvas");
+    hud.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:7";
+    film.appendChild(hud);
+  }
   hud.width = stage.width; hud.height = stage.height;
-  hud.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:7";
-  film.appendChild(hud);
-  hctx = hud.getContext("2d");
+  if (!hctx) hctx = hud.getContext("2d");
 };
 
 E.applyAct = function (i, local) {
@@ -110,9 +117,21 @@ E.nextAct = function () {
   if (ctx) { pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.drawImage(stage, 0, 0, prev.width, prev.height); E.transFrom = prev; }
   E.transTo = nxt;
   E.trans = 1;
+  E.shake = E.reduced ? 0 : E.H * 0.006;
   E.t = E.acts[nxt]._start;
   if (TC.Audio && TC.Audio.onAct) TC.Audio.onAct(nxt);
   E.actIndex = nxt; E.local = 0;
+};
+
+E.prevAct = function () {
+  const cur = E.actIndex;
+  const p = cur - 1;
+  if (p < 0) { E.transFrom = null; E.gotoAct(E.acts.length - 1, 0); return; }
+  if (ctx) { pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.drawImage(stage, 0, 0, prev.width, prev.height); E.transFrom = prev; }
+  E.trans = 1;
+  E.t = E.acts[p]._start;
+  if (TC.Audio && TC.Audio.onAct) TC.Audio.onAct(p);
+  E.actIndex = p; E.local = 0;
 };
 
 E.seek = function (t) {
@@ -141,7 +160,10 @@ E.setMuted = function (m) {
 
 const buildAct = function (a, i) {
   const t0 = U.now();
-  a.build(sctx, E.W, E.H, i);
+  E.builds++;
+  U.freeArena(a._arena);
+  U.beginArena();
+  try { a.build(sctx, E.W, E.H, i); } finally { a._arena = U.endArena(); }
   a._built = { w: E.W, h: E.H, dpr: E.dpr };
   a._buildMs = U.now() - t0;
 };
@@ -242,18 +264,22 @@ const frameHud = function () {
 };
 
 let last = 0, acc = 0, frames = 0, msSum = 0, msMax = 0, fpsT = 0, fpsN = 0, fps = 0;
-let adaptN = 0, adaptT = 0, adaptLock = E.cfg.dpr > 0;
+let adaptN = 0, adaptT = 0, adaptLock = E.cfg.dpr > 0, adaptAt = 0;
 const adapt = function (ms) {
-  if (adaptLock || frames < 60) return;
+  if (adaptLock || frames < 90) return;
   adaptT += ms; adaptN++;
-  if (adaptN < 90) return;
+  if (adaptN < 110) return;
   const avg = adaptT / adaptN;
   adaptT = 0; adaptN = 0;
-  const cur = E.dpr;
-  if (avg > 21 && cur > 0.9) E.dpr = Math.max(0.85, cur - 0.25);
-  else if (avg < 11.5 && cur < 2) E.dpr = Math.min(2, cur + 0.25);
+  const now = U.now();
+  if (now - adaptAt < 900) return;
+  const before = E.dpr;
+  if (avg > 23 && E.q > 0.52) E.q = Math.max(0.52, E.q * 0.87);
+  else if (avg < 12 && E.q < 1) E.q = Math.min(1, E.q * 1.15);
   else return;
-  E.onResize();
+  adaptAt = now;
+  E.fit(true);
+  if (Math.abs(E.dpr - before) < 0.06) { E.q = E.dpr / (E.baseDpr || 1); }
 };
 E.stats = { get fps() { return fps; }, get ms() { return frames ? msSum / frames : 0; }, get max() { return msMax; } };
 E.perf = { samples: [], fps: 0 };
@@ -291,16 +317,16 @@ const loop = function (now) {
   else { ctx.setTransform(E.dpr, 0, 0, E.dpr, 0, 0); ctx.drawImage(scene, 0, 0, E.W, E.H); ctx.setTransform(1, 0, 0, 1, 0, 0); }
   if (E.trans <= 0 && E.transFrom === null) { }
   if (!E.cfg.nohud) frameHud();
-  if (E.shake > 0) {
+  if (E.shake > 0.05) {
     ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(E.dpr, 0, 0, E.dpr, 0, 0);
     const s = E.shake;
     ctx.translate((U.noise2(E.t * 22, 1.1, 3) - 0.5) * s, (U.noise2(1.7, E.t * 22, 9) - 0.5) * s);
     ctx.drawImage(stage, 0, 0, E.W, E.H);
     ctx.restore();
-    E.shake *= 0.9;
-    if (E.shake < 0.1) E.shake = 0;
-  }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    E.shake *= 0.88;
+  } else E.shake = 0;
   E.firstFrame = false;
   if (TC.Audio && TC.Audio.update) TC.Audio.update(dt, E.t, want);
   E.transTo = -1;
@@ -316,8 +342,8 @@ const loop = function (now) {
 
 E.setAdaptive = function (on) {
   adaptLock = !on;
-  adaptT = 0; adaptN = 0;
-  if (on && E.cfg.dpr > 0) E.cfg.dpr = 0;
+  adaptT = 0; adaptN = 0; adaptAt = 0;
+  if (on && E.cfg.dpr > 0) { E.cfg.dpr = 0; E.baseDpr = 0; }
 };
 
 E.thumbFor = function (act, w, h) {
@@ -351,11 +377,12 @@ E.start = function () {
 
 E.onResize = U.debounce(function () {
   const keepT = E.t, keepAct = E.actIndex;
-  E.fit();
+  E.fit(false);
   E.transFrom = null; E.trans = 0;
   for (let i = 0; i < E.acts.length; i++) buildAct(E.acts[i], i);
   E.t = keepT; E.actIndex = keepAct;
-}, 220);
+  U.gcClear();
+}, 260);
 window.addEventListener("resize", E.onResize);
 window.addEventListener("orientationchange", E.onResize);
 document.addEventListener("visibilitychange", function () { last = U.now(); });

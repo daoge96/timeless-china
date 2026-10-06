@@ -33,13 +33,13 @@ body{font-family:"Cinzel","Trajan Pro",Georgia,"Times New Roman",serif;color:#f4
 .grain{position:absolute;inset:-6%;z-index:5;opacity:.055;background-repeat:repeat;background-size:180px 180px;mix-blend-mode:overlay;animation:grain 1.1s steps(3) infinite}
 @keyframes grain{0%{transform:translate(0,0)}33%{transform:translate(-2%,1.5%)}66%{transform:translate(1.5%,-1%)}100%{transform:translate(0,0)}}
 .vig{position:absolute;inset:0;z-index:5;background:radial-gradient(120% 90% at 50% 45%,transparent 38%,rgba(0,0,0,.34) 78%,rgba(0,0,0,.66) 100%)}
-.card{position:absolute;left:0;right:0;bottom:calc(var(--bar) + 6.4vh);z-index:6;text-align:center;opacity:0;transform:translateY(16px)}
+.card{position:absolute;left:0;right:0;bottom:calc(var(--bar) + 6.4vh);z-index:6;text-align:center;opacity:0;will-change:opacity,transform}
 .card .zh{font-family:"Noto Serif SC","Songti SC","STSong","SimSun",serif;font-size:clamp(26px,4.4vw,58px);letter-spacing:.5em;text-indent:.5em;color:var(--gold2);text-shadow:0 0 26px rgba(227,186,106,.42),0 2px 18px rgba(0,0,0,.85);font-weight:300}
 .card .en{margin-top:.85em;font-size:clamp(11px,1.28vw,17px);letter-spacing:.62em;text-indent:.62em;color:rgba(244,239,230,.9);text-transform:uppercase;text-shadow:0 2px 14px rgba(0,0,0,.9)}
 .card .en b{font-weight:600;color:var(--gold2)}
 .card .no{position:absolute;left:50%;top:-2.5em;transform:translateX(-50%);font-size:clamp(9px,1vw,12px);letter-spacing:.5em;text-indent:.5em;color:rgba(227,186,106,.75)}
 .card .rule{width:min(240px,42vw);height:1px;margin:1.5em auto 0;background:linear-gradient(90deg,transparent,rgba(227,186,106,.7),transparent);transform:scaleX(0)}
-.overlay{position:absolute;inset:0;z-index:20;display:grid;place-items:center;text-align:center;padding:6vh 7vw;background:radial-gradient(75% 60% at 50% 42%,rgba(12,17,26,.62),rgba(4,6,10,.94));backdrop-filter:blur(2px)}
+.overlay{position:absolute;inset:0;z-index:20;display:grid;place-items:center;text-align:center;padding:6vh 7vw;background:radial-gradient(72% 58% at 50% 44%,rgba(8,12,20,.42),rgba(3,5,9,.86));backdrop-filter:blur(1.5px)}
 .overlay.hide{opacity:0;visibility:hidden;transition:opacity 1.1s ease,visibility 1.1s}
 .ov-in{max-width:900px}
 .kicker{font-size:clamp(9px,1.05vw,12px);letter-spacing:.72em;text-indent:.72em;color:rgba(227,186,106,.82);text-transform:uppercase}
@@ -62,7 +62,7 @@ body{font-family:"Cinzel","Trajan Pro",Georgia,"Times New Roman",serif;color:#f4
 .hud .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,rgba(227,186,106,.5),var(--gold2));box-shadow:0 0 12px rgba(227,186,106,.6)}
 .hud .bar u{position:absolute;top:-2px;width:1px;height:5px;background:rgba(240,234,222,.42)}
 .hud .tag{position:absolute;right:3.2vw;bottom:calc(var(--bar) + 2.6vh);font-size:clamp(8px,1vw,11px);letter-spacing:.3em;color:rgba(227,186,106,.72);text-transform:uppercase}
-.hud .ctrl{position:absolute;right:3.2vw;top:calc(var(--bar) + 2.6vh);display:flex;gap:.45em;pointer-events:auto}
+.hud .ctrl{position:absolute;right:3.2vw;top:calc(var(--bar) + 2.6vh);display:flex;gap:.45em;pointer-events:auto;z-index:2}
 .hud .ctrl button{width:2.15em;height:2.15em;border:1px solid rgba(240,234,222,.24);background:rgba(6,9,14,.42);color:rgba(244,239,230,.78);border-radius:2px;cursor:pointer;font:inherit;font-size:clamp(9px,1vw,11px);line-height:1;transition:.3s;display:grid;place-items:center}
 .hud .ctrl button:hover{border-color:var(--gold);color:var(--gold2);background:rgba(227,186,106,.13)}
 .picker{position:absolute;inset:0;z-index:24;background:rgba(4,6,10,.9);display:none;place-items:center;padding:7vh 6vw;backdrop-filter:blur(6px)}
@@ -92,9 +92,6 @@ body{font-family:"Cinzel","Trajan Pro",Georgia,"Times New Roman",serif;color:#f4
 <div class="grain" id="grain"></div>
 <div class="card" id="card"><div class="no" id="cardNo"></div><div class="zh cjk" id="cardZh"></div><div class="en" id="cardEn"></div><div class="rule" id="cardRule"></div></div>
 <div class="hud" id="hud">
-<div class="idx"><b id="hudNo">01</b> / <span id="hudTot">07</span> &nbsp;&middot;&nbsp; <span id="hudName">THE GREAT WALL</span></div>
-<div class="bar"><i id="hudFill"></i><u id="hudMark"></u></div>
-<div class="tag" id="hudTag">TIMELESS CHINA</div>
 <div class="ctrl"><button id="btnMute" title="Sound on / off">&#9834;</button><button id="btnPause" title="Pause / play">&#10073;&#10073;</button><button id="btnNext" title="Next scene">&#9654;&#9654;</button><button id="btnGrid" title="Scenes">&#9638;</button></div>
 </div>
 <div class="picker" id="picker"><div class="pk-in"><div class="pk-t">Choose a scene &nbsp;&middot;&nbsp; 场景选择</div><div class="pk-g" id="pkGrid"></div></div></div>
@@ -333,6 +330,14 @@ U.gradStops = function (stops, alphaFn) {
   });
 };
 const LAYERS = [];
+U._arena = null;
+U.beginArena = function () { U._arena = { list: [] }; return U._arena; };
+U.endArena = function () { const a = U._arena; U._arena = null; return a; };
+U.freeArena = function (a) {
+  if (!a) return;
+  for (let i = 0; i < a.list.length; i++) a.list[i].destroy();
+  a.list.length = 0;
+};
 U.Layer = function (w, h, dpr) {
   dpr = dpr || 1;
   const c = document.createElement("canvas");
@@ -369,12 +374,8 @@ U.Layer = function (w, h, dpr) {
     blur(px) { const t = document.createElement("canvas"); t.width = c.width; t.height = c.height; const tg = t.getContext("2d"); tg.filter = "blur(" + px + "px)"; tg.drawImage(c, 0, 0); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.drawImage(t, 0, 0); g.setTransform(dpr, 0, 0, dpr, 0, 0); return L; },
     destroy() { c.width = c.height = 1; },
   };
-  LAYERS.push(L);
+  if (U._arena) U._arena.list.push(L);
   return L;
-};
-U.disposeLayers = function (keep) {
-  keep = keep || 0;
-  while (LAYERS.length > keep) { const l = LAYERS.pop(); if (l) l.destroy(); }
 };
 const GCACHE = new Map();
 const gkey = (tag, args) => {
@@ -2635,7 +2636,7 @@ E.cfg = {
 E.reduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 E.low = E.cfg.q === "low" || E.cfg.q === "med";
 
-E.W = 0; E.H = 0; E.dpr = 1;
+E.W = 0; E.H = 0; E.dpr = 1; E.baseDpr = 0; E.q = 1;
 E.t = 0; E.paused = E.cfg.pause; E.muted = E.cfg.mute; E.userPaused = false;
 E.actIndex = -1; E.local = 0;
 E.timeScale = E.reduced ? 0.82 : 1;
@@ -2677,28 +2678,35 @@ let ctx = null, scene = null, sctx = null, prev = null, pctx = null;
 let hud = null, hctx = null;
 let thumbLayer = null;
 
-E.fit = function () {
+E.fits = 0; E.builds = 0;
+E.fit = function (soft) {
+  E.fits++;
   const vw = Math.max(320, window.innerWidth);
   const vh = Math.max(240, window.innerHeight);
   E.W = vw; E.H = vh;
-  const big = vw * vh > 2400000;
-  E.dpr = E.cfg.dpr > 0 ? U.clamp(E.cfg.dpr, 0.5, 3) : U.clamp(window.devicePixelRatio || 1, 1, big ? 1.5 : 2) * (E.low ? 0.8 : 1);
+  if (!soft || !E.baseDpr) {
+    const big = vw * vh > 1700000;
+    E.baseDpr = E.cfg.dpr > 0 ? U.clamp(E.cfg.dpr, 0.5, 3)
+      : U.clamp(window.devicePixelRatio || 1, 1, big ? 1.5 : 2) * (E.low ? 0.75 : 1);
+  }
+  E.dpr = U.clamp(E.baseDpr * E.q, 0.7, 2.6);
   stage.width = Math.ceil(vw * E.dpr); stage.height = Math.ceil(vh * E.dpr);
   stage.style.width = vw + "px"; stage.style.height = vh + "px";
-  ctx = stage.getContext("2d", { alpha: false });
-  scene = document.createElement("canvas");
+  if (!ctx) ctx = stage.getContext("2d", { alpha: false });
+  if (!scene) scene = document.createElement("canvas");
   scene.width = stage.width; scene.height = stage.height;
-  window.__scene = [scene.width, scene.height];
-  sctx = scene.getContext("2d", { alpha: false });
-  prev = document.createElement("canvas");
+  if (!sctx) sctx = scene.getContext("2d", { alpha: false });
+  if (!prev) prev = document.createElement("canvas");
   prev.width = Math.ceil(vw / 2); prev.height = Math.ceil(vh / 2);
-  pctx = prev.getContext("2d", { alpha: false });
+  if (!pctx) pctx = prev.getContext("2d", { alpha: false });
   if (E.cfg.nohud) { const h = document.getElementById("hud"); if (h) h.style.display = "none"; return; }
-  hud = document.createElement("canvas");
+  if (!hud) {
+    hud = document.createElement("canvas");
+    hud.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:7";
+    film.appendChild(hud);
+  }
   hud.width = stage.width; hud.height = stage.height;
-  hud.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:7";
-  film.appendChild(hud);
-  hctx = hud.getContext("2d");
+  if (!hctx) hctx = hud.getContext("2d");
 };
 
 E.applyAct = function (i, local) {
@@ -2722,9 +2730,21 @@ E.nextAct = function () {
   if (ctx) { pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.drawImage(stage, 0, 0, prev.width, prev.height); E.transFrom = prev; }
   E.transTo = nxt;
   E.trans = 1;
+  E.shake = E.reduced ? 0 : E.H * 0.006;
   E.t = E.acts[nxt]._start;
   if (TC.Audio && TC.Audio.onAct) TC.Audio.onAct(nxt);
   E.actIndex = nxt; E.local = 0;
+};
+
+E.prevAct = function () {
+  const cur = E.actIndex;
+  const p = cur - 1;
+  if (p < 0) { E.transFrom = null; E.gotoAct(E.acts.length - 1, 0); return; }
+  if (ctx) { pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.drawImage(stage, 0, 0, prev.width, prev.height); E.transFrom = prev; }
+  E.trans = 1;
+  E.t = E.acts[p]._start;
+  if (TC.Audio && TC.Audio.onAct) TC.Audio.onAct(p);
+  E.actIndex = p; E.local = 0;
 };
 
 E.seek = function (t) {
@@ -2753,7 +2773,10 @@ E.setMuted = function (m) {
 
 const buildAct = function (a, i) {
   const t0 = U.now();
-  a.build(sctx, E.W, E.H, i);
+  E.builds++;
+  U.freeArena(a._arena);
+  U.beginArena();
+  try { a.build(sctx, E.W, E.H, i); } finally { a._arena = U.endArena(); }
   a._built = { w: E.W, h: E.H, dpr: E.dpr };
   a._buildMs = U.now() - t0;
 };
@@ -2854,18 +2877,22 @@ const frameHud = function () {
 };
 
 let last = 0, acc = 0, frames = 0, msSum = 0, msMax = 0, fpsT = 0, fpsN = 0, fps = 0;
-let adaptN = 0, adaptT = 0, adaptLock = E.cfg.dpr > 0;
+let adaptN = 0, adaptT = 0, adaptLock = E.cfg.dpr > 0, adaptAt = 0;
 const adapt = function (ms) {
-  if (adaptLock || frames < 60) return;
+  if (adaptLock || frames < 90) return;
   adaptT += ms; adaptN++;
-  if (adaptN < 90) return;
+  if (adaptN < 110) return;
   const avg = adaptT / adaptN;
   adaptT = 0; adaptN = 0;
-  const cur = E.dpr;
-  if (avg > 21 && cur > 0.9) E.dpr = Math.max(0.85, cur - 0.25);
-  else if (avg < 11.5 && cur < 2) E.dpr = Math.min(2, cur + 0.25);
+  const now = U.now();
+  if (now - adaptAt < 900) return;
+  const before = E.dpr;
+  if (avg > 23 && E.q > 0.52) E.q = Math.max(0.52, E.q * 0.87);
+  else if (avg < 12 && E.q < 1) E.q = Math.min(1, E.q * 1.15);
   else return;
-  E.onResize();
+  adaptAt = now;
+  E.fit(true);
+  if (Math.abs(E.dpr - before) < 0.06) { E.q = E.dpr / (E.baseDpr || 1); }
 };
 E.stats = { get fps() { return fps; }, get ms() { return frames ? msSum / frames : 0; }, get max() { return msMax; } };
 E.perf = { samples: [], fps: 0 };
@@ -2903,16 +2930,16 @@ const loop = function (now) {
   else { ctx.setTransform(E.dpr, 0, 0, E.dpr, 0, 0); ctx.drawImage(scene, 0, 0, E.W, E.H); ctx.setTransform(1, 0, 0, 1, 0, 0); }
   if (E.trans <= 0 && E.transFrom === null) { }
   if (!E.cfg.nohud) frameHud();
-  if (E.shake > 0) {
+  if (E.shake > 0.05) {
     ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(E.dpr, 0, 0, E.dpr, 0, 0);
     const s = E.shake;
     ctx.translate((U.noise2(E.t * 22, 1.1, 3) - 0.5) * s, (U.noise2(1.7, E.t * 22, 9) - 0.5) * s);
     ctx.drawImage(stage, 0, 0, E.W, E.H);
     ctx.restore();
-    E.shake *= 0.9;
-    if (E.shake < 0.1) E.shake = 0;
-  }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    E.shake *= 0.88;
+  } else E.shake = 0;
   E.firstFrame = false;
   if (TC.Audio && TC.Audio.update) TC.Audio.update(dt, E.t, want);
   E.transTo = -1;
@@ -2928,8 +2955,8 @@ const loop = function (now) {
 
 E.setAdaptive = function (on) {
   adaptLock = !on;
-  adaptT = 0; adaptN = 0;
-  if (on && E.cfg.dpr > 0) E.cfg.dpr = 0;
+  adaptT = 0; adaptN = 0; adaptAt = 0;
+  if (on && E.cfg.dpr > 0) { E.cfg.dpr = 0; E.baseDpr = 0; }
 };
 
 E.thumbFor = function (act, w, h) {
@@ -2963,11 +2990,12 @@ E.start = function () {
 
 E.onResize = U.debounce(function () {
   const keepT = E.t, keepAct = E.actIndex;
-  E.fit();
+  E.fit(false);
   E.transFrom = null; E.trans = 0;
   for (let i = 0; i < E.acts.length; i++) buildAct(E.acts[i], i);
   E.t = keepT; E.actIndex = keepAct;
-}, 220);
+  U.gcClear();
+}, 260);
 window.addEventListener("resize", E.onResize);
 window.addEventListener("orientationchange", E.onResize);
 document.addEventListener("visibilitychange", function () { last = U.now(); });
@@ -3607,8 +3635,8 @@ A.shanghai = A.mk({
     }
     ctx.restore();
     B.shimmer(ctx, 0, hy + H * 0.01, W, H * 0.3, t, { n: 30, alpha: 0.24, color: "#ffe0b0", speed: 0.5, len: 60, seed: 12, thick: 1.4 });
-    const bx = W * (0.13 + 0.03 * Math.sin(t * 0.2));
-    const by = H * 0.93 + Math.sin(t * 0.6) * 1.4;
+    const bx = W * (0.3 + 0.03 * Math.sin(t * 0.2));
+    const by = H * 0.885 + Math.sin(t * 0.6) * 1.4;
     ctx.save();
     ctx.fillStyle = "#070c14";
     U.roundedPath(ctx, bx, by, W * 0.062, H * 0.015, H * 0.007);
@@ -3824,11 +3852,14 @@ const $ = (id) => document.getElementById(id);
 UI.started = false;
 UI.pickerOpen = false;
 UI.hudVisible = function () { return UI.started && !UI.pickerOpen; };
+UI._shown = -1;
+UI._autoT = 0;
 
-const dprEl = () => 1;
+let card = null, cardZh = null, cardEn = null, cardNo = null, cardRule = null;
 
 UI.mount = function () {
-  const intro = $("intro"), play = $("btnPlay"), picker = $("picker"), grid = $("pkGrid"), app = $("app");
+  const intro = $("intro"), play = $("btnPlay"), picker = $("picker"), grid = $("pkGrid"), app = $("app"), hud = $("hud");
+  card = $("card"); cardZh = $("cardZh"); cardEn = $("cardEn"); cardNo = $("cardNo"); cardRule = $("cardRule");
 
   const buildPicker = function () {
     if (grid.getAttribute("data-built") === "1") return;
@@ -3841,11 +3872,13 @@ UI.mount = function () {
       c.width = 480; c.height = 270;
       try {
         const g = c.getContext("2d");
+        U.beginArena();
         a.build(g, c.width, c.height, i);
         if (a.frame) a.frame(g, a._dur * 0.6, a._dur * 0.6, 0);
         g.setTransform(1, 0, 0, 1, 0, 0);
+        U.freeArena(U.endArena());
         im.src = c.toDataURL("image/jpeg", 0.78);
-      } catch (e) { }
+      } catch (e) { U.freeArena(U.endArena()); }
       const lab = document.createElement("span");
       lab.textContent = a.label;
       const num = document.createElement("i");
@@ -3858,7 +3891,7 @@ UI.mount = function () {
 
   UI.jumpTo = function (i) {
     UI.closePicker();
-    if (!UI.started) UI.begin(true);
+    if (!UI.started) UI.begin();
     E.transFrom = null; E.trans = 0;
     E.gotoAct(i, 0.05);
   };
@@ -3867,17 +3900,23 @@ UI.mount = function () {
   UI.closePicker = function () { UI.pickerOpen = false; picker.classList.remove("on"); };
   UI.togglePicker = function () { if (UI.pickerOpen) UI.closePicker(); else UI.openPicker(); };
 
-  UI.begin = function (silent) {
+  UI.begin = function () {
     if (UI.started) return;
     UI.started = true;
     intro.classList.add("hide");
     intro.style.pointerEvents = "none";
-    if (!silent && TC.Audio && !E.muted) TC.Audio.init();
+    hud.classList.add("on");
+    if (TC.Audio && !E.muted) TC.Audio.init();
+    if (UI.onBegin) UI.onBegin();
+  };
+
+  UI.autoplay = function (delay) {
+    UI._autoT = setTimeout(function () { UI.begin(); }, delay === undefined ? 4200 : delay);
   };
 
   play.addEventListener("click", function (ev) { ev.stopPropagation(); UI.begin(); });
 
-  app.addEventListener("click", function () {
+  app.addEventListener("click", function (ev) {
     if (!UI.started) { UI.begin(); return; }
     if (UI.pickerOpen) { UI.closePicker(); return; }
     E.nextAct();
@@ -3885,12 +3924,12 @@ UI.mount = function () {
 
   const bM = $("btnMute"), bP = $("btnPause"), bN = $("btnNext"), bG = $("btnGrid");
   const mark = function () {
-    bM.style.opacity = E.muted ? "0.42" : "1";
+    bM.style.opacity = E.muted ? "0.45" : "1";
     bP.innerHTML = E.paused ? "&#9654;" : "&#10073;&#10073;";
-    bP.style.opacity = E.paused ? "1" : "0.72";
-    bM.style.color = E.muted ? "rgba(240,234,222,0.4)" : "";
+    bP.style.opacity = E.paused ? "1" : "0.75";
+    bM.style.color = E.muted ? "rgba(240,234,222,0.42)" : "";
   };
-  const stop = (el, fn) => el.addEventListener("click", function (ev) { ev.stopPropagation(); fn(); mark(); });
+  const stop = function (el, fn) { el.addEventListener("click", function (ev) { ev.stopPropagation(); fn(); mark(); }); };
   stop(bM, function () { E.setMuted(!E.muted); });
   stop(bP, function () { E.togglePause(); });
   stop(bN, function () { E.nextAct(); });
@@ -3898,43 +3937,63 @@ UI.mount = function () {
   picker.addEventListener("click", function () { UI.closePicker(); });
   mark();
 
+  const gesture = function () {
+    if (!UI.started) UI.begin();
+    else if (TC.Audio && !E.muted) TC.Audio.init();
+  };
+  window.addEventListener("pointerdown", gesture);
+  window.addEventListener("keydown", gesture);
+  window.addEventListener("touchstart", gesture, { passive: true });
+
   window.addEventListener("keydown", function (e) {
     const k = e.key;
-    if (k === " " || k === "Enter") {
-      if (!UI.started) { UI.begin(); e.preventDefault(); return; }
-      E.togglePause(); mark(); e.preventDefault();
-    } else if (k === "n" || k === "N" || k === "ArrowRight") { if (!UI.started) UI.begin(); else E.nextAct(); }
+    if (k === " " || k === "Enter") { if (!UI.started) UI.begin(); else E.togglePause(); mark(); e.preventDefault(); }
+    else if (k === "n" || k === "N" || k === "ArrowRight" || k === "ArrowDown") { if (!UI.started) UI.begin(); else E.nextAct(); }
+    else if (k === "ArrowLeft" || k === "ArrowUp") { if (UI.started) E.prevAct(); }
     else if (k === "p" || k === "P") { E.togglePause(); mark(); }
     else if (k === "m" || k === "M") { E.setMuted(!E.muted); mark(); }
     else if (k === "s" || k === "S") { UI.togglePicker(); }
-    else if (k === "f" || k === "F") {
-      const d = document;
-      if (!d.fullscreenElement) { if (app.requestFullscreen) app.requestFullscreen(); }
-      else if (d.exitFullscreen) d.exitFullscreen();
-    } else if (k === "Escape") { if (UI.pickerOpen) UI.closePicker(); }
+    else if (k === "f" || k === "F") { if (!document.fullscreenElement) { if (app.requestFullscreen) app.requestFullscreen(); } else if (document.exitFullscreen) document.exitFullscreen(); }
+    else if (k === "Escape") { if (UI.pickerOpen) UI.closePicker(); }
   });
 
-  const unlock = function () {
-    if (TC.Audio && !E.muted && !E.audioBlocked) { TC.Audio.init(); }
-    if (UI.started) window.removeEventListener("pointerdown", unlock);
-  };
-  window.addEventListener("pointerdown", unlock);
-
   document.addEventListener("contextmenu", function (e) { e.preventDefault(); });
-
   if (TC.Audio) TC.Audio.setMuted(E.muted);
-  if (E.cfg.act >= 0 || TC.U.qs().auto === "1") UI.begin(true);
+  if (E.cfg.act >= 0 || U.qs().auto === "1") { UI.begin(); UI._autoT = 1; }
 };
 
-UI.frame = function () { };
+UI.frame = function (t, local, idx) {
+  if (!card) return;
+  const a = E.acts[idx];
+  if (!a) { card.style.opacity = "0"; return; }
+  if (UI._shown !== idx) {
+    UI._shown = idx;
+    cardZh.textContent = a.labelZh || "";
+    cardEn.textContent = a.label || "";
+    cardNo.textContent = String(idx + 1).padStart(2, "0") + " / " + String(E.acts.length).padStart(2, "0");
+    cardRule.style.transform = "scaleX(0)";
+  }
+  const off = idx === 0 ? 3.1 : 0;
+  const l = local - off;
+  const tin = 0.45, tfull = 1.5, hold = 4.6, gone = 5.6;
+  let o = 0, y = 20, sc = 0;
+  if (l >= tin && l < tfull) { const k = U.easeOut3((l - tin) / (tfull - tin)); o = k; y = 20 * (1 - k); sc = k; }
+  else if (l >= tfull && l < hold) { o = 1; y = 0; sc = 1; }
+  else if (l >= hold && l < gone) { const k = 1 - U.easeInOut((l - hold) / (gone - hold)); o = k; y = -14 * (1 - k); sc = 1; }
+  else if (l >= gone) { o = 0; sc = 1; }
+  card.style.opacity = o.toFixed(3);
+  card.style.transform = "translateY(" + y.toFixed(1) + "px)";
+  cardRule.style.transform = "scaleX(" + sc.toFixed(3) + ")";
+};
 
 UI.boot = function () {
   const err = $("err");
   try {
     if (!window.requestAnimationFrame) throw new Error("no raf");
-    E.fit();
+    E.fit(false);
     UI.mount();
     E.start();
+    UI.autoplay();
     window.TC.ready = true;
   } catch (e) {
     if (err) { err.style.display = "grid"; err.firstElementChild.innerHTML = "<b>Timeless China</b><br>" + (e && e.message ? e.message : "startup error") + "<br>Please try the latest Chrome, Edge, Safari or Firefox."; }

@@ -386,8 +386,8 @@ A.shanghai = A.mk({
     }
     ctx.restore();
     B.shimmer(ctx, 0, hy + H * 0.01, W, H * 0.3, t, { n: 30, alpha: 0.24, color: "#ffe0b0", speed: 0.5, len: 60, seed: 12, thick: 1.4 });
-    const bx = W * (0.13 + 0.03 * Math.sin(t * 0.2));
-    const by = H * 0.93 + Math.sin(t * 0.6) * 1.4;
+    const bx = W * (0.3 + 0.03 * Math.sin(t * 0.2));
+    const by = H * 0.885 + Math.sin(t * 0.6) * 1.4;
     ctx.save();
     ctx.fillStyle = "#070c14";
     U.roundedPath(ctx, bx, by, W * 0.062, H * 0.015, H * 0.007);

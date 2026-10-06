@@ -16,7 +16,7 @@ for (const f of order) {
 }
 const out = shell.replace("@@BODY@@", body.trimEnd());
 fs.writeFileSync(path.join(root, "index.html"), out);
-const REQUIRED_IDS = ["app","stage","film","grain","card","cardNo","cardZh","cardEn","cardRule","hud","hudNo","hudTot","hudName","hudFill","hudMark","hudTag","btnMute","btnPause","btnNext","btnGrid","picker","pkGrid","intro","btnPlay","err"];
+const REQUIRED_IDS = ["app","stage","film","grain","card","cardNo","cardZh","cardEn","cardRule","hud","btnMute","btnPause","btnNext","btnGrid","picker","pkGrid","intro","btnPlay","err"];
 const missingIds = REQUIRED_IDS.filter((id) => out.indexOf('id="' + id + '"') < 0);
 const openDiv = (out.match(/<div/g) || []).length;
 const closeDiv = (out.match(/<\/div>/g) || []).length;

@@ -219,6 +219,14 @@ U.gradStops = function (stops, alphaFn) {
   });
 };
 const LAYERS = [];
+U._arena = null;
+U.beginArena = function () { U._arena = { list: [] }; return U._arena; };
+U.endArena = function () { const a = U._arena; U._arena = null; return a; };
+U.freeArena = function (a) {
+  if (!a) return;
+  for (let i = 0; i < a.list.length; i++) a.list[i].destroy();
+  a.list.length = 0;
+};
 U.Layer = function (w, h, dpr) {
   dpr = dpr || 1;
   const c = document.createElement("canvas");
@@ -255,12 +263,8 @@ U.Layer = function (w, h, dpr) {
     blur(px) { const t = document.createElement("canvas"); t.width = c.width; t.height = c.height; const tg = t.getContext("2d"); tg.filter = "blur(" + px + "px)"; tg.drawImage(c, 0, 0); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.drawImage(t, 0, 0); g.setTransform(dpr, 0, 0, dpr, 0, 0); return L; },
     destroy() { c.width = c.height = 1; },
   };
-  LAYERS.push(L);
+  if (U._arena) U._arena.list.push(L);
   return L;
-};
-U.disposeLayers = function (keep) {
-  keep = keep || 0;
-  while (LAYERS.length > keep) { const l = LAYERS.pop(); if (l) l.destroy(); }
 };
 const GCACHE = new Map();
 const gkey = (tag, args) => {
