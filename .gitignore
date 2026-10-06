@@ -12,6 +12,7 @@ dev/bounce/
 dev/bare/
 dev/clone/
 dev/_*.md
+dev/_*.mjs
 dev/_blobcache.json
 dev/clean/
 dev/stills/
