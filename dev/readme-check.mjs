@@ -24,6 +24,8 @@ t("readme: has live demo url", md.includes("https://daoge96.github.io/timeless-c
 t("readme: has badges", (md.match(/img\.shields\.io/g) || []).length >= 5, (md.match(/img\.shields\.io/g) || []).length + " badges");
 t("readme: length in range", md.split("\n").length > 120 && md.split("\n").length < 320, md.split("\n").length + " lines");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-t("readme size figure matches reality", md.includes(Math.round(Buffer.byteLength(html) / 1024 / 10) * 10 + " KB") || md.includes("~160 KB"), (Buffer.byteLength(html) / 1024).toFixed(0) + "KB actual");
+const realKb = Buffer.byteLength(html) / 1024;
+const claimed = [...md.matchAll(/(\d+)\s*KB/g)].map((m) => parseInt(m[1], 10));
+t("readme size figure matches reality", claimed.some((k) => Math.abs(k - realKb) <= 4), "actual=" + realKb.toFixed(1) + "KB claimed=" + [...new Set(claimed)].join("/") );
 console.log("\nREADME CHECK: PASS " + pass + "  FAIL " + fail);
 process.exit(fail ? 1 : 0);

@@ -11,7 +11,7 @@ A cinematic journey through China's greatest landscapes — the Great Wall at fi
 [![Watch the film](https://img.shields.io/badge/%E2%96%B6_WATCH_THE_FILM-LIVE_DEMO-c0392b?style=for-the-badge)](https://daoge96.github.io/timeless-china/)
 ![Made with](https://img.shields.io/badge/MADE_WITH-HTML5_CANVAS_2D-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![Dependencies](https://img.shields.io/badge/DEPENDENCIES-0-2E7D32?style=for-the-badge)
-![Size](https://img.shields.io/badge/SIZE-ONE_FILE_%7E160_KB-6C3483?style=for-the-badge)
+![Size](https://img.shields.io/badge/SIZE-ONE_FILE_%7E165_KB-6C3483?style=for-the-badge)
 ![Offline](https://img.shields.io/badge/RUNS-OFFLINE-0078D4?style=for-the-badge)
 ![Frame rate](https://img.shields.io/badge/RENDERED_AT-60_FPS-E67E22?style=for-the-badge)
 [![License](https://img.shields.io/badge/LICENSE-MIT-3DA639?style=for-the-badge)](LICENSE)
@@ -32,7 +32,7 @@ A cinematic journey through China's greatest landscapes — the Great Wall at fi
 
 - There is **no audio file**. Not one `.mp3`. The entire score is synthesized live, as you watch it.
 
-- There is **no library, no build step, nothing to install**. One `index.html`, ~160 KB, and that is the whole film: engine, seven scenes, music, interface, controls.
+- There is **no library, no build step, nothing to install**. One `index.html`, ~165 KB, and that is the whole film: engine, seven scenes, music, interface, controls.
 
 - Every frame is drawn from scratch at 60 fps on a single 2D `<canvas>` — about 12,600 of them, start to finish.
 
@@ -44,7 +44,7 @@ Open it and it plays. Unplug the internet and it plays. Double-click it from you
 |------|-------|
 | Runtime | ~3.5 minutes, one continuous piece |
 | Scenes | 7, hand-composed |
-| Deliverable | 1 file, ~160 KB, 0 dependencies |
+| Deliverable | 1 file, ~165 KB, 0 dependencies |
 | Assets | 0 images · 0 audio files |
 | Rendering | Canvas 2D, `requestAnimationFrame` |
 | Score | Web Audio API, fully generative |
@@ -52,6 +52,8 @@ Open it and it plays. Unplug the internet and it plays. Double-click it from you
 ## Watch it
 
 **[https://daoge96.github.io/timeless-china/](https://daoge96.github.io/timeless-china/)** — sound on, press `F` for fullscreen, lights off.
+
+**It starts by itself.** No play button, no click: open it and the opening scene is already moving, a title card fades in, and the film plays straight through all seven scenes in about three and a half minutes. Sound begins on your first click or keypress — browsers require one gesture before audio — and the film waits for nothing else.
 
 Or run it locally — two commands, no server, no install:
 
@@ -97,15 +99,21 @@ Under the picture runs a continuous pentatonic score that transposes scene by sc
 
 ## Controls
 
+Nothing is required — the film autoplays. These are for steering it.
+
 | Input | Action |
 |-------|--------|
-| Click / tap anywhere | Next scene |
+| Click / tap anywhere | First click: unlock sound. After that: skip to the next scene |
 | `N` or `→` | Next scene |
-| `S` | Scene picker — live thumbnails of all seven scenes, click one to jump |
+| `←` or `↑` | Previous scene |
+| `Space` | Pause / resume |
 | `P` | Pause / resume |
+| `S` | Scene picker — live thumbnails of all seven scenes, click one to jump |
 | `M` | Sound on / off |
 | `F` | Fullscreen |
 | `Esc` | Close the scene picker |
+
+The scene picker (`S`) renders its thumbnails from the real engine, so what you click is what you get.
 
 The film is also deep-linkable, which makes a single moment easy to share:
 
@@ -178,7 +186,7 @@ The same budget holds across viewports, all three verified in the QA run:
 
 ```
 timeless-china/
-├── index.html                 # the entire film — engine, scenes, score, UI (~160 KB)
+├── index.html                 # the entire film — engine, scenes, score, UI (~165 KB)
 ├── README.md
 ├── LICENSE                    # MIT
 ├── .github/
