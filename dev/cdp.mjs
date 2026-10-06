@@ -127,7 +127,7 @@ const main = async () => {
   await send("Log.enable");
   await send("Network.enable");
   await send("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: DPR, mobile: false });
-  const u = "file:///" + FILE.replace(/\\/g, "/") + (QS ? (QS.startsWith("?") ? QS : "?" + QS) : "");
+  const u = (argv.url ? argv.url : "file:///" + FILE.replace(/\\/g, "/")) + (QS ? (QS.startsWith("?") ? QS : "?" + QS) : "");
   console.log("nav " + u);
   await send("Page.navigate", { url: u });
   await sleep(argv.settle ? parseInt(argv.settle, 10) : 1500);

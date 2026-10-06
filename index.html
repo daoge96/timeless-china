@@ -3089,32 +3089,53 @@ A.fgPine = function (ctx, W, H, o) {
   o = o || {};
   const rnd = U.rng(o.seed || 17);
   const side = o.side || 1;
-  const y0 = o.y === undefined ? 0.05 : o.y;
-  const bx = side > 0 ? W * 1.03 : -W * 0.03;
-  const by = H * y0;
   const ink = o.ink || "#04070c";
-  B.stroke(ctx, [{ x: bx, y: by - H * 0.01 }, { x: bx - side * W * 0.1, y: by + H * 0.004 }, { x: bx - side * W * 0.26, y: by + H * 0.019 }], {
-    w0: H * 0.019, w1: H * 0.007, ink: ink, profile: "taper", wobble: 2, step: 6, bristles: 0,
-  });
-  for (let i = 0; i < 6; i++) {
-    const t = 0.06 + i * 0.19;
-    const px = bx - side * W * 0.26 * t;
-    const py = by + H * 0.019 * t + (rnd() - 0.5) * H * 0.022;
-    const r = H * (0.022 + rnd() * 0.026) * (1 - t * 0.3);
-    const g = ctx.createRadialGradient(px, py, 0, px, py, r * 2.9);
-    g.addColorStop(0, U.rgba(ink, 0.8));
-    g.addColorStop(0.38, U.rgba(ink, 0.36));
-    g.addColorStop(0.62, U.rgba(ink, 0.1));
-    g.addColorStop(0.82, U.rgba(ink, 0));
+  const bx = side > 0 ? W * 0.9 : W * 0.1;
+  const by = H * (o.y === undefined ? 0.05 : o.y);
+  const len = W * 0.255;
+  const drop = H * 0.028;
+
+  const mass = function (px, py, r, a) {
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.scale(1, 0.34);
+    const R = r * 2.4;
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+    g.addColorStop(0, U.rgba(ink, a));
+    g.addColorStop(0.3, U.rgba(ink, a * 0.6));
+    g.addColorStop(0.58, U.rgba(ink, a * 0.24));
+    g.addColorStop(0.8, U.rgba(ink, a * 0.07));
     g.addColorStop(1, U.rgba(ink, 0));
     ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.ellipse(px, py, r * 2.7, r * 0.8, (rnd() - 0.5) * 0.6, 0, U.TAU);
-    ctx.fill();
-    B.tuft(ctx, px, py, r * 2.6, { n: 7, ink: ink, w: 1.2, alpha: 0.62, spread: 2.9, rnd: rnd });
-    B.stroke(ctx, [{ x: px + side * r * 0.3, y: py + r * 0.2 }, { x: px - side * r * 1.4, y: py - r * 0.9 }, { x: px - side * r * 2.6, y: py - r * 1.5 }], {
-      w0: H * 0.006, w1: H * 0.0025, ink: ink, profile: "taper", wobble: 1, step: 4, bristles: 0,
-    });
+    ctx.fillRect(-R, -R, R * 2, R * 2);
+    ctx.restore();
+  };
+
+  B.stroke(ctx, [
+    { x: bx, y: by - H * 0.012 },
+    { x: bx - side * len * 0.34, y: by + drop * 0.2 },
+    { x: bx - side * len * 0.72, y: by + drop * 1.1 },
+    { x: bx - side * len * 1.02, y: by + drop * 1.9 },
+  ], { w0: H * 0.021, w1: H * 0.005, ink: ink, profile: "taper", wobble: 3, step: 7, bristles: 0 });
+
+  const boughs = 7;
+  for (let i = 0; i < boughs; i++) {
+    const t = 0.1 + i * 0.132;
+    const px = bx - side * len * 1.02 * t;
+    const py = by - H * 0.012 + drop * 1.9 * Math.pow(t, 1.35) + (rnd() - 0.5) * H * 0.012;
+    const r = H * (0.016 + rnd() * 0.019) * (1.18 - t * 0.45);
+    mass(px, py + r * 0.55, r * 1.5, 0.5);
+    B.stroke(ctx, [
+      { x: px + side * r * 0.5, y: py + r * 0.2 },
+      { x: px - side * r * 1.5, y: py + r * 0.7 },
+      { x: px - side * r * 3.1, y: py + r * 1.5 },
+    ], { w0: H * 0.0065, w1: H * 0.0022, ink: ink, profile: "taper", wobble: 1.2, step: 4, bristles: 0 });
+    for (let k = 0; k < 3; k++) {
+      const kt = 0.35 + k * 0.3;
+      B.tuft(ctx, px - side * r * 3.1 * kt, py + r * 1.5 * kt, r * (1.8 + rnd() * 1.6), {
+        n: 7, ink: ink, w: 1.15, alpha: 0.42 + rnd() * 0.3, spread: 2.5, dir: Math.PI * 0.62 * side + Math.PI * 0.5, rnd: rnd,
+      });
+    }
   }
 };
 
